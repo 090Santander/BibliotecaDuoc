@@ -1,5 +1,7 @@
 package dev.bibliotecaduoc.bibliotecaduoc.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDate;
 
 public class Prestamo {
@@ -7,8 +9,13 @@ public class Prestamo {
     private int idPrestamo;
     private int idLibro;
     private String runSolicitante;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaSolicitud;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaEntrega;
+
     private int cantidadDias;
     private int multas;
 

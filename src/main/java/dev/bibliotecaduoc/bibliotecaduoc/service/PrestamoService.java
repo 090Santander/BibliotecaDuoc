@@ -31,28 +31,33 @@ public class PrestamoService {
     public Prestamo guardar(Prestamo prestamo) {
         validarPrestamo(prestamo);
         prestamo.setIdPrestamo(0);
-        prestamo.setMultas(0);
+
+        if (prestamo.getMultas() < 0) {
+            prestamo.setMultas(0);
+        }
+
         return prestamoRepository.save(prestamo);
     }
 
     public Optional<Prestamo> actualizar(int idPrestamo, Prestamo prestamoActualizado) {
         Optional<Prestamo> prestamoExistente = prestamoRepository.findById(idPrestamo);
 
-        if (prestamoExistente.isPresent()) {
-            validarPrestamo(prestamoActualizado);
-
-            Prestamo prestamo = prestamoExistente.get();
-            prestamo.setIdLibro(prestamoActualizado.getIdLibro());
-            prestamo.setRunSolicitante(prestamoActualizado.getRunSolicitante());
-            prestamo.setFechaSolicitud(prestamoActualizado.getFechaSolicitud());
-            prestamo.setFechaEntrega(prestamoActualizado.getFechaEntrega());
-            prestamo.setCantidadDias(prestamoActualizado.getCantidadDias());
-            prestamo.setMultas(prestamoActualizado.getMultas());
-
-            return Optional.of(prestamoRepository.save(prestamo));
+        if (prestamoExistente.isEmpty()) {
+            return Optional.empty();
         }
 
-        return Optional.empty();
+        validarPrestamo(prestamoActualizado);
+
+        Prestamo prestamo = prestamoExistente.get();
+        prestamo.setIdPrestamo(idPrestamo);
+        prestamo.setIdLibro(prestamoActualizado.getIdLibro());
+        prestamo.setRunSolicitante(prestamoActualizado.getRunSolicitante());
+        prestamo.setFechaSolicitud(prestamoActualizado.getFechaSolicitud());
+        prestamo.setFechaEntrega(prestamoActualizado.getFechaEntrega());
+        prestamo.setCantidadDias(prestamoActualizado.getCantidadDias());
+        prestamo.setMultas(Math.max(prestamoActualizado.getMultas(), 0));
+
+        return Optional.of(prestamoRepository.save(prestamo));
     }
 
     public boolean eliminar(int idPrestamo) {
@@ -60,6 +65,14 @@ public class PrestamoService {
     }
 
     private void validarPrestamo(Prestamo prestamo) {
+        if (prestamo == null) {
+            throw new IllegalArgumentException("El préstamo no puede ser nulo.");
+        }
+
+        if (prestamo.getIdLibro() <= 0) {
+            throw new IllegalArgumentException("El id del libro es obligatorio.");
+        }
+
         if (prestamo.getRunSolicitante() == null || prestamo.getRunSolicitante().trim().isEmpty()) {
             throw new IllegalArgumentException("El RUN del solicitante es obligatorio.");
         }
